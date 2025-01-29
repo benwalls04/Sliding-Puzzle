@@ -1,114 +1,74 @@
-from Search import Search
 import random
- 
-def get_actions(state, dim):
-    swipe_index = state.index(0)
-    row, col = divmod(swipe_index, dim) 
-
-    actions = []
-
-    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  
-
-    for horiz, vert in directions:
-        new_row, new_col = row + horiz, col + vert
-
-        if 0 <= new_row < dim and 0 <= new_col < dim:
-            new_index = new_row * dim + new_col
-
-            new_state = list(state)
-            new_state[swipe_index], new_state[new_index] = new_state[new_index], new_state[swipe_index]
-
-            actions.append(tuple(new_state))
-
-    return actions
-
-def dfs(curr, end, space, hidden): 
-  if len(curr) == end - 1:
-      cpy = tuple(curr)
-
-      index = cpy.index(hidden)
-      state = cpy[:index] + (0,) + cpy[index + 1:]
-      space[tuple(state)] = ""
-      return
-  
-  for i in range(1, end):
-      if i not in curr:
-          next = curr + [i]
-          dfs(next, end, space, hidden)
-
 
 class SlidingPuzzle: 
+    
+  def __init__(self):
+      self.board_size = 0
+      self.missing_num = 0
 
-  @staticmethod
-  def get_board(n):
-    nums = list(range(1, n * n + 1))
+  def get_actions(self, curr_state):
+      n = self.board_size
+      swipe_index = curr_state.index(0)
+      row, col = divmod(swipe_index, n)
+      
+      actions = []
+      directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Up, Down, Left, Right
 
-    row = random.randint(0, n - 1)
-    col = random.randint(0, n - 1)
-    missing_num = random.choice(nums)
-    nums.remove(missing_num)
+      for horiz, vert in directions:
+          new_row, new_col = row + horiz, col + vert
+          if 0 <= new_row < n and 0 <= new_col < n:
+              new_index = new_row * n + new_col
+              new_state = list(curr_state)
+              new_state[swipe_index], new_state[new_index] = new_state[new_index], new_state[swipe_index]
+              actions.append(tuple([tuple(new_state), 1]))
 
-    board = [[None for a in range(n)] for b in range(n)]
-    board[row][col] = 0
+      return actions
 
-    for r in range(n):
-      for c in range(n):
-        if r != row or c != col:
-          num = random.choice(nums)
-          board[r][c] = num
-          nums.remove(num)
+  def get_board(self):
+      n = self.board_size
+      nums = list(range(1, n * n + 1))
+      missing_num = random.choice(nums)
+      nums.remove(missing_num)
 
-    return [board, missing_num]
-  
-  @staticmethod
-  def get_goal(n, missing_num):
-    missing_indx = missing_num - 1
+      board = [None] * (n * n)
+      empty_index = random.randint(0, n * n - 1)
+      board[empty_index] = 0
 
-    goal = [[(i * n + j + 1) for j in range(n)] for i in range(n)]
-    goal[missing_indx // n][(missing_indx) % n] = 0
-    return goal
+      for i in range(n * n):
+          if board[i] is None:
+              board[i] = nums.pop()
+      
+      return board, missing_num
 
-  @staticmethod
-  def print_board(board, n):
-    print('-' * (4 * n + 1))
-    for row in range(n):
-      row_str = "| "
-      for col in range(n): 
-        entry = board[row][col]
-        if entry > 0: 
-          row_str += str(board[row][col]) + " | "
-        else: 
-          row_str += "  | "
-      print(row_str)
+  def init_states(self):
+      user_input = input("Enter width of the board: ")
+      while not user_input.isdigit():
+          user_input = input("Please enter a number: ")
+      n = int(user_input)
+      self.board_size = n
+
+      board, missing_num = self.get_board()
+      self.missing_num = missing_num
+
+      missing_indx = missing_num - 1
+      goal = [(i + 1) for i in range(n * n)]
+      goal[missing_indx] = 0
+      
+      self.pretty_print(board)
+
+      return tuple(board), tuple(goal)
+
+  def pretty_print(self, board):
+      n = self.board_size
       print('-' * (4 * n + 1))
-  
-  @staticmethod
-  def get_heuristics(): 
-    return
+      for i in range(n):
+          row = board[i * n:(i + 1) * n]
+          row_str = "| " + " | ".join(str(entry) if entry > 0 else " " for entry in row) + " |"
+          print(row_str)
+          print('-' * (4 * n + 1))
 
-  if __name__=="__main__":
+  def get_heuristic(self, curr_state):
+      return 0
 
-    user_input = input("Enter width of the board: ")
-    while not user_input.isdigit():
-      user_input = input("Pleae enter a number: ")
-    dim = int(user_input)
-
-    [start, hidden] = get_board(dim)
-    goal = get_goal(dim, hidden)
-
-    space = {}
-    end_depth = dim * dim
-    dfs([], end_depth + 1, space, hidden)
-    
-    for state in space.keys():
-      actions = get_actions(state, dim)
-      space[state] = actions
-
-    searcher = Search(start, goal, space, {})
-    path = searcher.search()
-    num_expansions = len(path)
-    
-
-
-
-  
+  def test(self, curr_state, goal_state):
+      return curr_state == goal_state

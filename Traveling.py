@@ -1,10 +1,12 @@
-from Search import Search
 import csv
 
 class Traveling:
 
-  @staticmethod
-  def parse():
+  def __init__(self):
+    self.map = {}
+    self.heuristics = {}
+
+  def parse(self):
     with open('MapInfo.csv', 'r') as file:
       reader = list(csv.reader(file))
 
@@ -22,26 +24,30 @@ class Traveling:
           if row[j] != '':
             cities_map[city].append((header_row[j], int(row[j])))
 
-      return [cities_map, heuristics]
-
-  if __name__ == "__main__": 
-    [cities_map, heuristics] = parse()
+      self.cities_map = cities_map
+      self.heuristics = heuristics
+    
+  def init_states(self):
+    self.parse()
+    
     goal = "Bucharest"
-
     start = input("Where would you like to start? ")
-    while start not in cities_map: 
+    while start not in self.cities_map: 
       start = input("Please enter a valid city: ")
 
-    searcher = Search(start, goal, cities_map, heuristics)
-    path = searcher.main()
-    num_expansions = len(path)
+    return [start, goal]
 
-    ## FIXME: print states and actions might as well include costs as well 
-    print(f"You have arrived in {goal} after {num_expansions} stops")
-    print("You took the following path:")
-    for city in path:
-      print(f"\t{city}")
-    
+  def get_actions(self, curr_state): 
+    return self.cities_map[curr_state]
+  
+  def get_heuristic(self, curr_state): 
+    return self.heuristics[curr_state]
+  
+  def test(self, curr_state, goal_state):
+    return curr_state == goal_state
+  
+  def pretty_print(self, curr_state):
+    print(curr_state)
 
 
     
