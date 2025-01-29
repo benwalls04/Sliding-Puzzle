@@ -13,8 +13,7 @@ class Search:
         self.actions = None
 
     def __lt__(self, other):
-      return id(self) < id(other)
-
+      return self.state < other.state
     
     def get_path(self): 
       curr = self
@@ -71,7 +70,7 @@ class Search:
       if len(frontier) == 0: 
         break
 
-    return False
+    return [-1, -1]
   
 if __name__=="__main__":
   valid_input = {"1", "2", "3"}
@@ -92,21 +91,23 @@ if __name__=="__main__":
 
     [start, goal] = problem.init_states()
     searcher = Search(start, goal)
-    [path, n_expansions] = searcher.search(problem, True)
-    
-    print("Using Uniform Cost Search")
-    print(f"You reached the goal after {n_expansions} expansions")
-    print("You took the following path:")
-    for item in path:
-      problem.pretty_print(f"\t{item}")
-    print("-------------")
 
     [path, n_expansions] = searcher.search(problem, False)
-    print("Using Uniform Cost Search")
-    print(f"You reached the goal after {n_expansions} expansions")
-    print("You took the following path:")
+    print("Starting state: ")
+    problem.pretty_print(start)
+
+    if path == -1: 
+      print(f"Unsolvable.. Try Again\n")
+      continue
+    
+    print(f"With UCS, you reached the goal after {n_expansions} expansions")
+
+    [path, n_expansions] = searcher.search(problem, True)
+    print(f"With A*, you reached the goal after {n_expansions} expansions")
+    print(f"You took the following path of length {len(path)}:")
+    print("")
     for item in path:
-      problem.pretty_print(f"\t{item}")
+      problem.pretty_print(item)
     print("-------------")
 
     user_input = None

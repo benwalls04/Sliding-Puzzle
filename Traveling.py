@@ -34,6 +34,7 @@ class Traveling:
     start = input("Where would you like to start? ")
     while start not in self.cities_map: 
       start = input("Please enter a valid city: ")
+    print("")
 
     return [start, goal]
 
